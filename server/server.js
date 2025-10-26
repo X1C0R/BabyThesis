@@ -26,9 +26,6 @@ app.post(
       const { email, password, full_name, contact_number, gender, role } =
         req.body;
 
-
-
-      // Create user in Supabase Auth
       const { data: authData, error: authError } =
         await supabase.auth.admin.createUser({
           email,
@@ -47,7 +44,6 @@ app.post(
       if (role?.toUpperCase() === "LANDLORD") {
         console.log("Landlord detected — processing images...");
 
-        // Check if both files exist
         if (!req.files?.profile_image || !req.files?.id_image) {
           return res.status(400).json({
             error:
@@ -55,7 +51,6 @@ app.post(
           });
         }
 
-        // Upload profile image
         const profileFile = req.files.profile_image[0];
         const profilePath = `profiles/${userId}-${profileFile.originalname}`;
         const { error: profileUploadError } = await supabase.storage
@@ -71,7 +66,6 @@ app.post(
           .getPublicUrl(profilePath);
         profileImageUrl = profilePublic.publicUrl;
 
-        // Upload ID image
         const idFile = req.files.id_image[0];
         const idPath = `ids/${userId}-${idFile.originalname}`;
         const { error: idUploadError } = await supabase.storage
@@ -86,7 +80,7 @@ app.post(
         idImageUrl = idPublic.publicUrl;
       }
 
-      // Insert into users table
+
       const { error: insertError } = await supabase.from("users").insert([
         {
           id: userId,
@@ -118,7 +112,7 @@ app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check if the email exists first
+
     const { data: existingUser, error: findError } = await supabase
       .from("users")
       .select("*")
@@ -230,7 +224,6 @@ app.post(
   ]),
   async (req, res) => {
     try {
-      // Debug: Log received files to inspect what's being sent
       console.log('Received files:', req.files);
       console.log('Received body:', req.body);
 
