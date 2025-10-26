@@ -59,61 +59,126 @@ const AddHotels = () => {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col gap-3 max-w-md mx-auto border p-4 rounded"
-    >
-      <input
-        type="text"
-        placeholder="Hotel Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        required
-      />
-      <textarea
-        placeholder="Description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-      />
-      <input
-        type="text"
-        placeholder="Location (e.g., Taguig City, Philippines)"
-        value={location}
-        onChange={(e) => setLocation(e.target.value)}
-        required
-      />
-      <input
-        type="number"
-        placeholder="Price"
-        value={price}
-        onChange={(e) => setPrice(e.target.value)}
-        required
-      />
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Property Name *
+          </label>
+          <input
+            type="text"
+            placeholder="Enter property name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            className="form-input w-full"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Price per Night (₱) *
+          </label>
+          <input
+            type="number"
+            placeholder="Enter price"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            required
+            className="form-input w-full"
+          />
+        </div>
+      </div>
 
-      <label>Front Display Image:</label>
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => setFrontdisplay(e.target.files[0])}
-      />
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Location *
+        </label>
+        <input
+          type="text"
+          placeholder="e.g., Taguig City, Philippines"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          required
+          className="form-input w-full"
+        />
+      </div>
 
-      <label>Room Image:</label>
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => setRoom(e.target.files[0])}
-      />
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Description
+        </label>
+        <textarea
+          placeholder="Describe your property..."
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={4}
+          className="form-input w-full resize-none"
+        />
+      </div>
 
-      <label>Other Images:</label>
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => setOthers(e.target.files[0])}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Front Display Image
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setFrontdisplay(e.target.files[0])}
+            className="form-input w-full"
+          />
+        </div>
 
-      <button type="submit" disabled={loading}>
-        {loading ? "Adding..." : "Add Hotel"}
-      </button>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Room Image
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setRoom(e.target.files[0])}
+            className="form-input w-full"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Additional Images
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setOthers(e.target.files[0])}
+            className="form-input w-full"
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end space-x-4">
+        <button 
+          type="button" 
+          className="nav-button"
+          onClick={() => {
+            setName("");
+            setDescription("");
+            setLocation("");
+            setPrice("");
+            setFrontdisplay(null);
+            setRoom(null);
+            setOthers(null);
+          }}
+        >
+          Cancel
+        </button>
+        <button 
+          type="submit" 
+          disabled={loading}
+          className="form-button"
+        >
+          {loading ? "Adding Property..." : "➕ Add Property"}
+        </button>
+      </div>
     </form>
   );
 };
