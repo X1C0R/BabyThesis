@@ -132,7 +132,7 @@ app.post("/login", async (req, res) => {
       });
     }
 
-    //  Attempt login with Supabase Auth
+
     const { data: authData, error: authError } =
       await supabase.auth.signInWithPassword({
         email,
@@ -148,7 +148,7 @@ app.post("/login", async (req, res) => {
       throw authError;
     }
 
-    // Success — return user and token
+
     res.json({
       success: true,
       message: "Login successful!",
@@ -167,7 +167,7 @@ app.put("/approve/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Update landlord record
+
     const { error } = await supabase
       .from("users")
       .update({ is_approved: true })
@@ -287,12 +287,11 @@ app.post(
         OtherImage = await UploadImg(req.files.others[0], "others");
       }
 
-      // Debug logs (unchanged, but now safer)
+
       console.log("Frontdisplay file:", req.files?.frontdisplay?.[0]);
       console.log("Room file:", req.files?.room?.[0]);
       console.log("Others file:", req.files?.others?.[0]);
 
-      // Insert hotel data into Supabase (unchanged)
       const { data, error } = await supabase.from("hotels").insert([
         {
           user_id,
@@ -318,7 +317,7 @@ app.post(
   }
 );
 
-// Export or start the app as needed
+
 
 
 
