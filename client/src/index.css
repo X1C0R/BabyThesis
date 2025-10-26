@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.nav-button {
+  color: black;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.nav-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+}
+

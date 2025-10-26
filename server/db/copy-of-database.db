@@ -1,0 +1,53 @@
+-- USERS TABLE
+CREATE TABLE users (
+  id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email text UNIQUE NOT NULL,
+  full_name text,
+  contact_number text,
+  gender text CHECK (gender IN ('Male', 'Female', 'Other')),
+  role text CHECK (role IN ('User', 'Landlord', 'Admin')) DEFAULT 'User',
+  profile_image_url text,
+  id_image_url text,
+  created_at timestamp DEFAULT now()
+);
+
+
+
+-- HOTELS TABLE
+CREATE TABLE hotels (
+  id serial PRIMARY KEY,
+  user_id uuid REFERENCES users(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  description text,
+  location text,
+  price numeric,
+  image_url text,
+  latitude numeric,
+  longitude numeric,
+  approved boolean DEFAULT false,
+  created_at timestamp DEFAULT now()
+);
+
+-- CALENDAR AVAILABILITY
+CREATE TABLE availability (
+  id serial PRIMARY KEY,
+  hotel_id int REFERENCES hotels(id) ON DELETE CASCADE,
+  available_date date NOT NULL,
+  is_booked boolean DEFAULT false
+);
+
+
+need to download
+npm install express cors dotenv multer @supabase/supabase-js
+npm install nodemon --save-dev
+npm install @react-google-maps/api
+
+ALTER TABLE hotels
+ADD COLUMN frontdisplay text,
+ADD COLUMN room text,
+ADD COLUMN others text;
+ALTER TABLE users ADD COLUMN is_approved BOOLEAN DEFAULT FALSE;
+
+
+API:
+AIzaSyB9Zjd4_lRRQY38t9_id8PdxVIHfZWuNLU
