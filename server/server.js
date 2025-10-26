@@ -26,7 +26,7 @@ app.post(
       const { email, password, full_name, contact_number, gender, role } =
         req.body;
 
-      // console.log("Received registration:", email, role);
+
 
       // Create user in Supabase Auth
       const { data: authData, error: authError } =
@@ -39,11 +39,11 @@ app.post(
       if (authError) throw authError;
       const userId = authData.user.id;
 
-      //Initialize image URLs
+
       let profileImageUrl = null;
       let idImageUrl = null;
 
-      //Upload images ONLY if Landlord
+
       if (role?.toUpperCase() === "LANDLORD") {
         console.log("Landlord detected — processing images...");
 
@@ -95,7 +95,7 @@ app.post(
           contact_number,
           gender,
           role,
-          id_image_url: profileImageUrl, // renamed for consistency in DB
+          id_image_url: profileImageUrl, 
           id_image: idImageUrl,
         },
       ]);
