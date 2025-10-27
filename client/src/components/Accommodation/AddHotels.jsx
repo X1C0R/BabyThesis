@@ -10,7 +10,7 @@ import { PickersDay } from "@mui/x-date-pickers/PickersDay";
 import dayjs from "dayjs";
 import { supabase } from "../supabased/supabasedClient";
 
-// 🧭 Fix Leaflet marker icons
+
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
@@ -19,7 +19,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-// Helper to update map view dynamically
 function ChangeView({ center }) {
   const map = useMap();
   useEffect(() => {
@@ -66,11 +65,11 @@ const AddHotels = ({ onHotelAdded, onClose }) => {
           setCoords({ lat: parseFloat(lat), lng: parseFloat(lon) });
           setLocationError("");
         } else {
-          setLocationError("⚠️ Location not found. Please try again.");
+          setLocationError("Location not found. Please try again.");
         }
       } catch (err) {
         console.error("Error fetching location:", err);
-        setLocationError("⚠️ Unable to fetch location.");
+        setLocationError("Unable to fetch location.");
       }
     };
 
