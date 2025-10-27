@@ -231,10 +231,10 @@ app.post(
         return res.status(400).json({ error: "Missing required fields" });
       }
 
-      // Parse dates array if sent as JSON string
+
       const getDates = availableDates ? JSON.parse(availableDates) : [];
 
-      // Get coordinates
+
       const coords = await TranslateLocation(location);
       if (!coords.latitude || !coords.longitude) {
         return res.status(400).json({
@@ -243,7 +243,7 @@ app.post(
         });
       }
 
-      // Upload images
+ 
       const uploadFile = async (file, folder) => {
         if (!file) return null;
 
@@ -270,7 +270,7 @@ app.post(
       const roomUrl = await uploadFile(req.files?.room?.[0], "room");
       const othersUrl = await uploadFile(req.files?.others?.[0], "others");
 
-      // Insert into hotels table using SERVICE ROLE (bypasses RLS)
+
       const { data, error } = await supabase
         .from("hotels")
         .insert([
