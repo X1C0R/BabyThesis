@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../images/logo.png";
-import Navbar from "../Navbar";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -21,11 +20,6 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
-
-  const handleLogout = async () => {
-    // Since user is not logged in on registration page, just redirect
-    navigate("/");
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -127,10 +121,8 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <Navbar user={null} onLogout={handleLogout} />
-      
-      <div className="pt-24 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-24">
+      <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl w-full">
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-2 border-gray-100">
           <div className="flex flex-col lg:flex-row">

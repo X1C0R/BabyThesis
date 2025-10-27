@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabased/supabasedClient";
-import Navbar from "../Navbar";
 
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -11,11 +10,6 @@ const Login = () => {
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,10 +38,8 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <Navbar user={null} onLogout={handleLogout} />
-      
-      <div className="pt-24 pb-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-24">
+      <div className="pb-12 px-4">
         <div className="max-w-md mx-auto bg-white shadow-xl rounded-2xl p-8 border border-gray-200">
           <h2 className="text-3xl font-extrabold text-gray-900 mb-2 text-center">
             Welcome Back
