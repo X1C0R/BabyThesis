@@ -41,6 +41,9 @@ need to download
 npm install express cors dotenv multer @supabase/supabase-js
 npm install nodemon --save-dev
 npm install @react-google-maps/api
+npm install react-leaflet leaflet
+npm install @mui/material @emotion/react @emotion/styled @mui/x-date-pickers dayjs
+
 
 ALTER TABLE hotels
 ADD COLUMN frontdisplay text,
@@ -51,3 +54,5 @@ ALTER TABLE users ADD COLUMN is_approved BOOLEAN DEFAULT FALSE;
 
 API:
 AIzaSyB9Zjd4_lRRQY38t9_id8PdxVIHfZWuNLU
+
+    

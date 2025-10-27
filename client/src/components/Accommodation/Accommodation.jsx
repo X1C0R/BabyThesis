@@ -24,7 +24,13 @@ const Accommodation = () => {
       <div className="text-center text-2xl mt-1.5">
       <h1>My Accomodation</h1>
       </div>
-    {ShowAddHotels && <AddHotels/>}
+   {ShowAddHotels && (
+  <AddHotels
+    onHotelAdded={() => fetchHotels()}
+    onClose={() => setShowAddHotels(false)}
+  />
+)}
+
     <MyHotels/>
     </div>
   );

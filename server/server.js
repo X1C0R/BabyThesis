@@ -5,7 +5,7 @@ import { supabase } from "./db/supabaseClient.js";
 import multer from "multer";
 
 dotenv.config();
-// const apiKey = process.env.GOOGLE_API_KEY;
+const apiKey = process.env.GOOGLE_API_KEY;
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -36,10 +36,8 @@ app.post(
       if (authError) throw authError;
       const userId = authData.user.id;
 
-
       let profileImageUrl = null;
       let idImageUrl = null;
-
 
       if (role?.toUpperCase() === "LANDLORD") {
         console.log("Landlord detected — processing images...");
@@ -80,7 +78,6 @@ app.post(
         idImageUrl = idPublic.publicUrl;
       }
 
-
       const { error: insertError } = await supabase.from("users").insert([
         {
           id: userId,
@@ -89,7 +86,7 @@ app.post(
           contact_number,
           gender,
           role,
-          id_image_url: profileImageUrl, 
+          id_image_url: profileImageUrl,
           id_image: idImageUrl,
         },
       ]);
@@ -112,7 +109,6 @@ app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-
     const { data: existingUser, error: findError } = await supabase
       .from("users")
       .select("*")
@@ -125,7 +121,6 @@ app.post("/login", async (req, res) => {
         error: "Email not found",
       });
     }
-
 
     const { data: authData, error: authError } =
       await supabase.auth.signInWithPassword({
@@ -141,7 +136,6 @@ app.post("/login", async (req, res) => {
       }
       throw authError;
     }
-
 
     res.json({
       success: true,
@@ -160,7 +154,6 @@ app.post("/login", async (req, res) => {
 app.put("/approve/:id", async (req, res) => {
   try {
     const { id } = req.params;
-
 
     const { error } = await supabase
       .from("users")
@@ -194,17 +187,24 @@ app.get("/pending-landlords", async (req, res) => {
   }
 });
 
+
 const TranslateLocation = async (address) => {
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-    address
-  )}`;
+  if (!address || typeof address !== "string") {
+    console.warn("Invalid address input");
+    return { latitude: null, longitude: null };
+  }
+
+  const normalizedAddress = address.trim().toLowerCase();
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(normalizedAddress)}`;
+
   const res = await fetch(url, {
-    headers: { "User-Agent": "YourAppName/1.0" },
+    headers: { "User-Agent": "BabyThesis" },
   });
+
   const data = await res.json();
 
   if (!data || data.length === 0) {
-    console.warn("Nominatim returned no results for:", address);
+    console.warn("Nominatim returned no results for:", normalizedAddress);
     return { latitude: null, longitude: null };
   }
 
@@ -224,29 +224,29 @@ app.post(
   ]),
   async (req, res) => {
     try {
-      console.log('Received files:', req.files);
-      console.log('Received body:', req.body);
+      console.log("REQ.BODY:", req.body);
+      console.log("REQ.FILES:", req.files);
 
-      const { user_id, name, description, location, price } = req.body;
+      const { user_id, name, description, location, price, availableDates } = req.body;
 
       if (!user_id || !name || !location || !price) {
         return res.status(400).json({ error: "Missing required fields" });
       }
 
-      let latitude = null,
-        longitude = null;
-      try {
-        const coords = await TranslateLocation(location);
-        latitude = coords.latitude;
-        longitude = coords.longitude;
-      } catch (err) {
-        console.error("TranslateLocation failed:", err);
-      }
+      const getDates = availableDates ? JSON.parse(availableDates) : []; 
 
+      const coords = await TranslateLocation(location);
+
+      if (!coords.latitude || !coords.longitude) {
+        return res.status(400).json({
+          error:
+            "Location not found. Please enter a valid city or address (e.g., Taguig City, Philippines).",
+        });
+      }
 
       const UploadImg = async (file, folder) => {
         if (!file) return null;
-        const fileExt = file.originalname.split(".").pop();
+
         const fileName = `${Date.now()}-${file.originalname}`;
         const filePath = `${folder}/${fileName}`;
 
@@ -259,46 +259,41 @@ app.post(
           return null;
         }
 
-        const { publicUrl } = supabase.storage
+        const { data } = supabase.storage
           .from("hotels-images")
           .getPublicUrl(filePath);
-        return publicUrl;
+
+        return data.publicUrl;
       };
 
-      let FirstImage = null;
-      if (req.files && req.files.frontdisplay && Array.isArray(req.files.frontdisplay) && req.files.frontdisplay.length > 0) {
-        FirstImage = await UploadImg(req.files.frontdisplay[0], "frontdisplay");
-      }
 
-      let RoomImage = null;
-      if (req.files && req.files.room && Array.isArray(req.files.room) && req.files.room.length > 0) {
-        RoomImage = await UploadImg(req.files.room[0], "room");
-      }
+      const frontFile = req.files?.frontdisplay?.[0] || null;
+      const roomFile = req.files?.room?.[0] || null;
+      const otherFile = req.files?.others?.[0] || null;
 
-      let OtherImage = null;
-      if (req.files && req.files.others && Array.isArray(req.files.others) && req.files.others.length > 0) {
-        OtherImage = await UploadImg(req.files.others[0], "others");
-      }
+      const FirstImage = await UploadImg(frontFile, "frontdisplay");
+      const RoomImage = await UploadImg(roomFile, "room");
+      const OtherImage = await UploadImg(otherFile, "others");
 
 
-      console.log("Frontdisplay file:", req.files?.frontdisplay?.[0]);
-      console.log("Room file:", req.files?.room?.[0]);
-      console.log("Others file:", req.files?.others?.[0]);
-
-      const { data, error } = await supabase.from("hotels").insert([
-        {
-          user_id,
-          name,
-          description,
-          location,
-          price: parseFloat(price),
-          latitude,
-          longitude,
-          frontdisplay: FirstImage,
-          room: RoomImage,
-          others: OtherImage,
-        },
-      ]);
+      const { data, error } = await supabase
+        .from("hotels")
+        .insert([
+          {
+            user_id,
+            name,
+            description,
+            location,
+            price: parseFloat(price),
+            availableDates: getDates,
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+            frontdisplay: FirstImage,
+            room: RoomImage,
+            others: OtherImage,
+          },
+        ])
+        .select();
 
       if (error) throw error;
 
@@ -309,9 +304,6 @@ app.post(
     }
   }
 );
-
-
-
 
 
 

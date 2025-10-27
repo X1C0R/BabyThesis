@@ -26,3 +26,53 @@ input[type=number] {
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
 }
 
+.custom-file-input {
+  color: transparent; /* hides default text */
+}
+
+.custom-file-input::before {
+  content: '+ Add Attachment (Display)';
+  color: #555;
+  display: inline-block;
+  margin-right: 10px;
+  white-space: nowrap;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.room-file-input{
+  color: transparent;
+}
+
+.room-file-input::before{
+   content: '+ Add Attachment (Room)';
+  color: #555;
+  display: inline-block;
+  margin-right: 10px;
+  white-space: nowrap;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.Others-file-input{
+  color: transparent;
+}
+
+.Others-file-input::before{
+   content: '+ Add Attachment (Room)';
+  color: #555;
+  display: inline-block;
+  margin-right: 10px;
+  white-space: nowrap;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.custom-file-input::-webkit-file-upload-button {
+  visibility: hidden;
+}
+
+
+
