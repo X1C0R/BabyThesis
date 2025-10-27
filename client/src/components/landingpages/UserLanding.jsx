@@ -71,31 +71,31 @@ const UserLanding = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <Navbar user={user} onLogout={LogOut} />
       
       {/* Hero Section */}
-      <section className="hero-section pt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <section className="bg-gradient-to-br from-white to-blue-50 pt-32 pb-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+            <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 mb-6">
               Find Your Perfect
-              <span className="block text-yellow-300">Accommodation</span>
+              <span className="block text-yellow-500 mt-2">Accommodation</span>
             </h1>
-            <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
               Discover amazing hotels, apartments, and dormitories for your next stay. 
               Book with confidence and enjoy the best accommodation experience.
             </p>
             
             {/* Search Bar */}
-            <div className="max-w-2xl mx-auto mb-12">
-              <div className="search-bar flex items-center">
+            <div className="max-w-2xl mx-auto mb-16">
+              <div className="flex items-center bg-white rounded-2xl shadow-lg border border-gray-200 px-6 py-4 focus-within:shadow-xl transition-shadow">
                 <input
                   type="text"
                   placeholder="Where are you going?"
-                  className="flex-1 bg-transparent border-none outline-none text-gray-700 placeholder-gray-500"
+                  className="flex-1 border-none outline-none text-gray-700 placeholder-gray-400 text-lg"
                 />
-                <button className="nav-button primary ml-4">
+                <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg">
                   🔍 Search
                 </button>
               </div>
@@ -104,16 +104,16 @@ const UserLanding = () => {
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
               <div className="text-center">
-                <div className="text-4xl font-bold text-white mb-2">500+</div>
-                <div className="text-white/80">Hotels Available</div>
+                <div className="text-5xl font-extrabold text-gray-900 mb-2">500+</div>
+                <div className="text-gray-600 font-medium">Hotels Available</div>
               </div>
               <div className="text-center">
-                <div className="text-4xl font-bold text-white mb-2">50+</div>
-                <div className="text-white/80">Cities Covered</div>
+                <div className="text-5xl font-extrabold text-gray-900 mb-2">50+</div>
+                <div className="text-gray-600 font-medium">Cities Covered</div>
               </div>
               <div className="text-center">
-                <div className="text-4xl font-bold text-white mb-2">10K+</div>
-                <div className="text-white/80">Happy Guests</div>
+                <div className="text-5xl font-extrabold text-gray-900 mb-2">10K+</div>
+                <div className="text-gray-600 font-medium">Happy Guests</div>
               </div>
             </div>
           </div>
@@ -124,35 +124,35 @@ const UserLanding = () => {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-5">
               Why Choose AccommodationHub?
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
               We provide the best accommodation booking experience with trusted partners and excellent service.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="accommodation-card p-8 text-center">
-              <div className="text-4xl mb-4">🏨</div>
-              <h3 className="text-xl font-semibold mb-4">Premium Hotels</h3>
-              <p className="text-gray-600">
+            <div className="bg-white border-2 border-gray-200 rounded-2xl p-8 text-center hover:shadow-xl transition-all hover:border-blue-400">
+              <div className="text-6xl mb-6">🏨</div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Premium Hotels</h3>
+              <p className="text-gray-600 leading-relaxed">
                 Stay in luxury hotels with world-class amenities and exceptional service.
               </p>
             </div>
             
-            <div className="accommodation-card p-8 text-center">
-              <div className="text-4xl mb-4">🏢</div>
-              <h3 className="text-xl font-semibold mb-4">Modern Apartments</h3>
-              <p className="text-gray-600">
+            <div className="bg-white border-2 border-gray-200 rounded-2xl p-8 text-center hover:shadow-xl transition-all hover:border-purple-400">
+              <div className="text-6xl mb-6">🏢</div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Modern Apartments</h3>
+              <p className="text-gray-600 leading-relaxed">
                 Comfortable apartments perfect for extended stays and family trips.
               </p>
             </div>
             
-            <div className="accommodation-card p-8 text-center">
-              <div className="text-4xl mb-4">🏫</div>
-              <h3 className="text-xl font-semibold mb-4">Student Dormitories</h3>
-              <p className="text-gray-600">
+            <div className="bg-white border-2 border-gray-200 rounded-2xl p-8 text-center hover:shadow-xl transition-all hover:border-green-400">
+              <div className="text-6xl mb-6">🏫</div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Student Dormitories</h3>
+              <p className="text-gray-600 leading-relaxed">
                 Affordable dormitory options for students and budget-conscious travelers.
               </p>
             </div>

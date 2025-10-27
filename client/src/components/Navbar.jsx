@@ -16,20 +16,18 @@ const Navbar = ({ user, onLogout }) => {
   };
 
   return (
-    <nav className="navbar fixed top-0 left-0 right-0 z-50">
+    <nav className="bg-white fixed top-0 left-0 right-0 z-50 border-b-2 border-gray-200 shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <div className="logo-container mr-3">
-              <img 
-                src={logo} 
-                alt="AccommodationHub Logo" 
-                className="h-8 w-auto cursor-pointer"
-                onClick={() => navigate("/")}
-              />
-            </div>
-            <span className="logo-text text-xl hidden sm:block">
+            <img 
+              src={logo} 
+              alt="AccommodationHub Logo" 
+              className="h-10 w-auto cursor-pointer"
+              onClick={() => navigate("/")}
+            />
+            <span className="ml-3 text-gray-900 font-bold text-xl hidden sm:block">
               AccommodationHub
             </span>
           </div>
@@ -112,3 +110,4 @@ const Navbar = ({ user, onLogout }) => {
 };
 
 export default Navbar;
+
