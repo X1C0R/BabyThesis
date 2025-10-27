@@ -55,6 +55,13 @@ const Accommodation = () => {
       <div className="max-w-[1760px] mx-auto px-6 sm:px-8 py-10">
         <MyHotels />
       </div>
+      <div className="text-center text-2xl mt-1.5">
+      {/* <h1>My Accomodation</h1> */}
+      </div>
+    {ShowAddHotels && 
+      <AddHotels/>}
+{/* 
+    <MyHotels/> */}
     </div>
   );
 };

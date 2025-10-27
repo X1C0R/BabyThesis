@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; // ✅ fixed import
 import { supabase } from "../supabased/supabasedClient";
 import { showSuccess, showError } from "../../utils/modalUtils";
 
@@ -16,7 +16,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: form.email,
         password: form.password,
       });
@@ -53,7 +53,7 @@ const Login = () => {
             Welcome Back
           </h2>
           <p className="text-center text-gray-600 mb-8">
-            Sign in to your AccommodationHub account
+            Sign in to your EssentiaLokal account
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -87,7 +87,7 @@ const Login = () => {
             </div>
             <button
               type="submit"
-              className="w-full py-3 px-4 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transform hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm"
+              className="w-full py-3 px-4 rounded-xl text-white font-semibold bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transform hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm"
               disabled={loading}
             >
               {loading ? "⏳ Logging in..." : "🔐 Sign In"}

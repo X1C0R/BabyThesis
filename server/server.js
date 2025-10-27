@@ -3,9 +3,10 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { supabase } from "./db/supabaseClient.js";
 import multer from "multer";
+import jwt from "jsonwebtoken";
 
 dotenv.config();
-// const apiKey = process.env.GOOGLE_API_KEY;
+const apiKey = process.env.GOOGLE_API_KEY;
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -13,6 +14,27 @@ app.use(express.json());
 //storage for images
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
+
+
+const authenticateUser = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Missing or invalid token" });
+  }
+
+  const token = authHeader.split(" ")[1];
+  const { data, error } = await supabase.auth.getUser(token);
+
+  if (error || !data?.user) {
+    console.error("Auth error:", error);
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
+
+  req.user = data.user;
+  next();
+};
+
 
 //Register accounts
 app.post(
@@ -36,10 +58,8 @@ app.post(
       if (authError) throw authError;
       const userId = authData.user.id;
 
-
       let profileImageUrl = null;
       let idImageUrl = null;
-
 
       if (role?.toUpperCase() === "LANDLORD") {
         console.log("Landlord detected — processing images...");
@@ -80,7 +100,6 @@ app.post(
         idImageUrl = idPublic.publicUrl;
       }
 
-
       const { error: insertError } = await supabase.from("users").insert([
         {
           id: userId,
@@ -89,7 +108,7 @@ app.post(
           contact_number,
           gender,
           role,
-          id_image_url: profileImageUrl, 
+          id_image_url: profileImageUrl,
           id_image: idImageUrl,
         },
       ]);
@@ -112,7 +131,6 @@ app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-
     const { data: existingUser, error: findError } = await supabase
       .from("users")
       .select("*")
@@ -125,7 +143,6 @@ app.post("/login", async (req, res) => {
         error: "Email not found",
       });
     }
-
 
     const { data: authData, error: authError } =
       await supabase.auth.signInWithPassword({
@@ -141,7 +158,6 @@ app.post("/login", async (req, res) => {
       }
       throw authError;
     }
-
 
     res.json({
       success: true,
@@ -160,7 +176,6 @@ app.post("/login", async (req, res) => {
 app.put("/approve/:id", async (req, res) => {
   try {
     const { id } = req.params;
-
 
     const { error } = await supabase
       .from("users")
@@ -194,17 +209,24 @@ app.get("/pending-landlords", async (req, res) => {
   }
 });
 
+
 const TranslateLocation = async (address) => {
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-    address
-  )}`;
+  if (!address || typeof address !== "string") {
+    console.warn("Invalid address input");
+    return { latitude: null, longitude: null };
+  }
+
+  const normalizedAddress = address.trim().toLowerCase();
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(normalizedAddress)}`;
+
   const res = await fetch(url, {
-    headers: { "User-Agent": "YourAppName/1.0" },
+    headers: { "User-Agent": "BabyThesis" },
   });
+
   const data = await res.json();
 
   if (!data || data.length === 0) {
-    console.warn("Nominatim returned no results for:", address);
+    console.warn("Nominatim returned no results for:", normalizedAddress);
     return { latitude: null, longitude: null };
   }
 
@@ -224,33 +246,21 @@ app.post(
   ]),
   async (req, res) => {
     try {
-      console.log('Received files:', JSON.stringify(req.files, null, 2));
-      console.log('Received body:', req.body);
-
       const { user_id, name, description, location, price } = req.body;
-      
-      if (!req.files) {
-        console.log("No files received in request");
-      }
 
       if (!user_id || !name || !location || !price) {
         return res.status(400).json({ error: "Missing required fields" });
       }
 
-      let latitude = null,
-        longitude = null;
-      try {
-        const coords = await TranslateLocation(location);
-        latitude = coords.latitude;
-        longitude = coords.longitude;
-      } catch (err) {
-        console.error("TranslateLocation failed:", err);
+      const coords = await TranslateLocation(location);
+      if (!coords.latitude || !coords.longitude) {
+        return res.status(400).json({
+          error: "Location not found. Please enter a valid city or address.",
+        });
       }
 
-
-      const UploadImg = async (file, folder) => {
+      const uploadFile = async (file, folder) => {
         if (!file) return null;
-        const fileExt = file.originalname.split(".").pop();
         const fileName = `${Date.now()}-${file.originalname}`;
         const filePath = `${folder}/${fileName}`;
 
@@ -266,49 +276,20 @@ app.post(
         const { data } = supabase.storage
           .from("hotels-images")
           .getPublicUrl(filePath);
-        console.log(`Upload successful for ${folder}:`, data.publicUrl);
         return data.publicUrl;
       };
 
-      let FirstImage = null;
-      if (req.files && req.files.frontdisplay && Array.isArray(req.files.frontdisplay) && req.files.frontdisplay.length > 0) {
-        FirstImage = await UploadImg(req.files.frontdisplay[0], "frontdisplay");
-      }
-
-      let RoomImage = null;
-      if (req.files && req.files.room && Array.isArray(req.files.room) && req.files.room.length > 0) {
-        RoomImage = await UploadImg(req.files.room[0], "room");
-      }
+      const frontUrl = await uploadFile(req.files?.frontdisplay?.[0], "frontdisplay");
+      const roomUrl = await uploadFile(req.files?.room?.[0], "room");
 
       // Handle multiple additional images
-      let OtherImages = [];
-      if (req.files && req.files.others && Array.isArray(req.files.others) && req.files.others.length > 0) {
-        console.log(`Processing ${req.files.others.length} additional images`);
+      let othersUrls = [];
+      if (req.files?.others && Array.isArray(req.files.others) && req.files.others.length > 0) {
         for (const file of req.files.others) {
-          const url = await UploadImg(file, "others");
-          if (url) OtherImages.push(url);
+          const url = await uploadFile(file, "others");
+          if (url) othersUrls.push(url);
         }
-      } else {
-        console.log("No additional images provided");
       }
-
-      console.log("Frontdisplay file:", req.files?.frontdisplay?.[0]);
-      console.log("Room file:", req.files?.room?.[0]);
-      console.log("Others files count:", OtherImages.length);
-      console.log("req.files structure:", JSON.stringify(Object.keys(req.files || {})));
-
-      console.log("Inserting hotel with data:", {
-        user_id,
-        name,
-        description,
-        location,
-        price,
-        latitude,
-        longitude,
-        frontdisplay: FirstImage,
-        room: RoomImage,
-        others: OtherImages.length > 0 ? OtherImages.join(',') : null,
-      });
 
       const { data, error } = await supabase
         .from("hotels")
@@ -319,27 +300,21 @@ app.post(
             description,
             location,
             price: parseFloat(price),
-            latitude,
-            longitude,
-            frontdisplay: FirstImage,
-            room: RoomImage,
-            others: OtherImages.length > 0 ? OtherImages.join(',') : null,
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+            frontdisplay: frontUrl,
+            room: roomUrl,
+            others: othersUrls.length > 0 ? othersUrls.join(',') : null,
           },
         ])
-        .select(); // Return the inserted row
+        .select();
 
-      if (error) {
-        console.error("Supabase insert error:", error);
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log("Insert result:", JSON.stringify(data, null, 2));
       if (data && data.length > 0) {
         res.json({ message: "Hotel added successfully", hotel: data[0] });
       } else {
-        // Still return success even if we can't get the row back
-        console.warn("Hotel inserted but no data returned");
-        res.json({ message: "Hotel added successfully (data not retrieved)" });
+        res.json({ message: "Hotel added successfully" });
       }
     } catch (err) {
       console.error("AddHotels Route Error:", err);
@@ -360,6 +335,31 @@ app.get("/hotels/:userId", async (req, res) => {
       .order("created_at", { ascending: false });
 
     if (error) throw error;
+app.get("/UserProfile/:id", authenticateUser, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      console.error("Supabase error:", error);
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({ success: true, user: data });
+  } catch (err) {
+    console.error("Error fetching user profile:", err.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
     res.json({ success: true, hotels: data });
   } catch (error) {

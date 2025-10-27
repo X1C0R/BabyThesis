@@ -28,11 +28,9 @@ const AddHotels = ({ onSuccess }) => {
       formData.append("location", location);
       formData.append("price", price);
 
-      // Append files only if they exist
       if (frontdisplay) formData.append("frontdisplay", frontdisplay, frontdisplay.name);
       if (room) formData.append("room", room, room.name);
       
-      // Append multiple additional images
       others.forEach((file) => {
         formData.append("others", file, file.name);
       });
@@ -46,7 +44,6 @@ const AddHotels = ({ onSuccess }) => {
       console.log("Hotel added:", response.data);
       showSuccess("Property added successfully!", "Success");
 
-      // Reset form
       setName("");
       setDescription("");
       setLocation("");
@@ -55,16 +52,15 @@ const AddHotels = ({ onSuccess }) => {
       setRoom(null);
       setOthers([]);
 
-      // Call onSuccess callback if provided
       if (onSuccess) {
         onSuccess();
       }
     } catch (err) {
       console.error("Error adding hotel:", err);
       showError("Failed to add property. Please try again.", "Error");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const handleDragOver = (e) => {
@@ -157,7 +153,7 @@ const AddHotels = ({ onSuccess }) => {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Front Display Image
@@ -181,7 +177,6 @@ const AddHotels = ({ onSuccess }) => {
             className="form-input w-full"
           />
         </div>
-
       </div>
 
       {/* Multiple Additional Images with Drag & Drop */}
@@ -265,7 +260,7 @@ const AddHotels = ({ onSuccess }) => {
             setOthers([]);
           }}
         >
-          Cancel
+          Reset
         </button>
         <button 
           type="submit" 
