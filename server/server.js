@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { supabase } from "./db/supabaseClient.js";
 import multer from "multer";
+import jwt from "jsonwebtoken";
 
 dotenv.config();
 const apiKey = process.env.GOOGLE_API_KEY;
@@ -13,6 +14,27 @@ app.use(express.json());
 //storage for images
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
+
+
+const authenticateUser = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Missing or invalid token" });
+  }
+
+  const token = authHeader.split(" ")[1];
+  const { data, error } = await supabase.auth.getUser(token);
+
+  if (error || !data?.user) {
+    console.error("Auth error:", error);
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
+
+  req.user = data.user;
+  next();
+};
+
 
 //Register accounts
 app.post(
@@ -300,6 +322,31 @@ app.post(
   }
 );
 
+app.get("/UserProfile/:id", authenticateUser, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      console.error("Supabase error:", error);
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({ success: true, user: data });
+  } catch (err) {
+    console.error("Error fetching user profile:", err.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 
 

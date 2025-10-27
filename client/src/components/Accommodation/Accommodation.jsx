@@ -11,6 +11,7 @@ const Accommodation = () => {
   const [loadingUser, setLoadingUser] = useState(true);
   const [ShowAddHotels, setShowAddHotels] = useState(false);
 
+
   // Fetch user session and role/approval from users table
  useEffect(() => {
   const fetchUserData = async () => {

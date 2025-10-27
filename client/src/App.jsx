@@ -7,6 +7,7 @@ import UserLanding from "./components/landingpages/UserLanding";
 import Login from "./components/LoginFolder/login";
 import Accommodation from "./components/Accommodation/Accommodation";
 import AdminProvesAccounts from "./components/Admin/AdminProvesAccounts";
+import UserProfile from "./components/landingpages/UserProfile";
 
 // Layout component with global navbar
 function Layout() {
@@ -86,6 +87,7 @@ function App() {
           <Route path="/" element={<UserLanding/>}/>
           <Route path="/accommodation" element={<Accommodation/>}/>
           <Route path="/AdminProvesAccounts" element={<AdminProvesAccounts/>}/>
+          <Route path="/profile" element={<UserProfile/>}/>
         </Route>
       </Routes>
     </Router>

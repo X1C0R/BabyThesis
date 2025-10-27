@@ -43,7 +43,7 @@ npm install nodemon --save-dev
 npm install @react-google-maps/api
 npm install react-leaflet leaflet
 npm install @mui/material @emotion/react @emotion/styled @mui/x-date-pickers dayjs
-
+npm install jsonwebtoken
 
 ALTER TABLE hotels
 ADD COLUMN frontdisplay text,
