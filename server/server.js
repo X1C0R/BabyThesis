@@ -220,14 +220,18 @@ app.post(
   upload.fields([
     { name: "frontdisplay", maxCount: 1 },
     { name: "room", maxCount: 1 },
-    { name: "others", maxCount: 1 },
+    { name: "others", maxCount: 10 }, // Allow multiple images
   ]),
   async (req, res) => {
     try {
-      console.log('Received files:', req.files);
+      console.log('Received files:', JSON.stringify(req.files, null, 2));
       console.log('Received body:', req.body);
 
       const { user_id, name, description, location, price } = req.body;
+      
+      if (!req.files) {
+        console.log("No files received in request");
+      }
 
       if (!user_id || !name || !location || !price) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -259,10 +263,11 @@ app.post(
           return null;
         }
 
-        const { publicUrl } = supabase.storage
+        const { data } = supabase.storage
           .from("hotels-images")
           .getPublicUrl(filePath);
-        return publicUrl;
+        console.log(`Upload successful for ${folder}:`, data.publicUrl);
+        return data.publicUrl;
       };
 
       let FirstImage = null;
@@ -275,34 +280,67 @@ app.post(
         RoomImage = await UploadImg(req.files.room[0], "room");
       }
 
-      let OtherImage = null;
+      // Handle multiple additional images
+      let OtherImages = [];
       if (req.files && req.files.others && Array.isArray(req.files.others) && req.files.others.length > 0) {
-        OtherImage = await UploadImg(req.files.others[0], "others");
+        console.log(`Processing ${req.files.others.length} additional images`);
+        for (const file of req.files.others) {
+          const url = await UploadImg(file, "others");
+          if (url) OtherImages.push(url);
+        }
+      } else {
+        console.log("No additional images provided");
       }
-
 
       console.log("Frontdisplay file:", req.files?.frontdisplay?.[0]);
       console.log("Room file:", req.files?.room?.[0]);
-      console.log("Others file:", req.files?.others?.[0]);
+      console.log("Others files count:", OtherImages.length);
+      console.log("req.files structure:", JSON.stringify(Object.keys(req.files || {})));
 
-      const { data, error } = await supabase.from("hotels").insert([
-        {
-          user_id,
-          name,
-          description,
-          location,
-          price: parseFloat(price),
-          latitude,
-          longitude,
-          frontdisplay: FirstImage,
-          room: RoomImage,
-          others: OtherImage,
-        },
-      ]);
+      console.log("Inserting hotel with data:", {
+        user_id,
+        name,
+        description,
+        location,
+        price,
+        latitude,
+        longitude,
+        frontdisplay: FirstImage,
+        room: RoomImage,
+        others: OtherImages.length > 0 ? OtherImages.join(',') : null,
+      });
 
-      if (error) throw error;
+      const { data, error } = await supabase
+        .from("hotels")
+        .insert([
+          {
+            user_id,
+            name,
+            description,
+            location,
+            price: parseFloat(price),
+            latitude,
+            longitude,
+            frontdisplay: FirstImage,
+            room: RoomImage,
+            others: OtherImages.length > 0 ? OtherImages.join(',') : null,
+          },
+        ])
+        .select(); // Return the inserted row
 
-      res.json({ message: "Hotel added successfully", hotel: data[0] });
+      if (error) {
+        console.error("Supabase insert error:", error);
+        throw error;
+      }
+
+      console.log("Insert result:", JSON.stringify(data, null, 2));
+      if (data && data.length > 0) {
+        res.json({ message: "Hotel added successfully", hotel: data[0] });
+      } else {
+        // Still return success even if we can't get the row back
+        console.warn("Hotel inserted but no data returned");
+        res.json({ message: "Hotel added successfully (data not retrieved)" });
+      }
     } catch (err) {
       console.error("AddHotels Route Error:", err);
       res.status(500).json({ error: err.message });
@@ -310,10 +348,42 @@ app.post(
   }
 );
 
+// Get hotels for a specific user
+app.get("/hotels/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
 
+    const { data, error } = await supabase
+      .from("hotels")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
 
+    if (error) throw error;
 
+    res.json({ success: true, hotels: data });
+  } catch (error) {
+    console.error("GET HOTELS ERROR:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
+// Get all hotels
+app.get("/hotels", async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("hotels")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    res.json({ success: true, hotels: data });
+  } catch (error) {
+    console.error("GET ALL HOTELS ERROR:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 export default app;
 const PORT = process.env.PORT || 4000;

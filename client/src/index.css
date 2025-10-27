@@ -70,3 +70,60 @@ input[type=number] {
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
+/* Form Input Styling */
+.form-input {
+  border: 2px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 10px 16px;
+  transition: all 0.3s ease;
+  background: #FFFFFF;
+  font-size: 14px;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #3B82F6;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Form Button Styling */
+.form-button {
+  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.form-button:hover {
+  background: linear-gradient(135deg, #2563EB, #7C3AED);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.form-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Modal Animation */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out;
+}
+

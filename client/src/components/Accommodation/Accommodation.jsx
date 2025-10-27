@@ -1,79 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "../supabased/supabasedClient";
-import Navbar from "../Navbar";
-import AddHotels from "./AddHotels";
+import React from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import MyHotels from "./MyHotels";
 
 const Accommodation = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [loadingUser, setLoadingUser] = useState(true);
-  const [ShowAddHotels, setShowAddHotels] = useState(false);
-
-  // Fetch user session and role/approval from users table
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const currentUser = sessionData?.session?.user;
-      if (!currentUser) {
-        setUser(null);
-        setLoadingUser(false);
-        navigate("/login");
-        return;
-      }
-
-      // Fetch role and approval from users table
-      const { data, error } = await supabase
-        .from("users")
-        .select("role, is_approved")
-        .eq("id", currentUser.id)
-        .single();
-
-      if (!error && data) {
-        setUser({ ...currentUser, ...data });
-      } else {
-        setUser(currentUser); // fallback if error
-      }
-      setLoadingUser(false);
-    };
-
-    fetchUserData();
-
-    // Listen for auth changes
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        if (session?.user) {
-          setUser(prev => ({ ...prev, ...session.user }));
-        } else {
-          setUser(null);
-          navigate("/login");
-        }
-      }
-    );
-
-    return () => listener.subscription.unsubscribe();
-  }, [navigate]);
-
-  const LogOut = async () => {
-    const confirmLogout = window.confirm("Are you sure you want to logout?");
-    if (confirmLogout) {
-      await supabase.auth.signOut();
-      setUser(null);
-      navigate("/");
-    }
-  };
-
-  if (loadingUser) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  const context = useOutletContext();
+  const user = context?.user || null;
 
   if (!user || user.role?.toUpperCase() !== "LANDLORD" || !user.is_approved) {
     return (
@@ -96,65 +28,32 @@ const Accommodation = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar user={user} onLogout={LogOut} />
-      
-      <div className="pt-16">
-        {/* Header Section */}
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                  My Accommodations
-                </h1>
-                <p className="text-gray-600">
-                  Manage your hotels, apartments, and dormitories
-                </p>
-              </div>
-              <div className="flex gap-4 mt-4 md:mt-0">
-                <button 
-                  className="nav-button primary"
-                  onClick={() => setShowAddHotels(!ShowAddHotels)}
-                >
-                  ➕ Add New Property
-                </button>
-                <button className="nav-button">
-                  📊 Analytics
-                </button>
-                <button className="nav-button">
-                  📋 Reservations
-                </button>
-              </div>
+    <div className="min-h-screen bg-white pt-16">
+      {/* Modern Header */}
+      <div className="border-b border-gray-200 bg-white sticky top-16 z-40">
+        <div className="max-w-[1760px] mx-auto px-6 sm:px-8">
+          <div className="flex items-center justify-between py-6">
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900">
+                Your properties
+              </h1>
+              <p className="text-sm text-gray-500 mt-1">
+                Manage and grow your accommodation listings
+              </p>
             </div>
+            <button 
+              className="px-6 py-3 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition-all shadow-sm hover:shadow-md"
+              onClick={() => navigate("/add-property")}
+            >
+              + Add new property
+            </button>
           </div>
         </div>
+      </div>
 
-        {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {ShowAddHotels && (
-            <div className="mb-8">
-              <div className="form-container p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                  Add New Property
-                </h2>
-                <AddHotels />
-              </div>
-            </div>
-          )}
-
-          {/* Properties List */}
-          <div className="bg-white rounded-lg shadow-sm border">
-            <div className="p-6 border-b">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Your Properties
-              </h2>
-            </div>
-            <div className="p-6">
-              <MyHotels />
-            </div>
-          </div>
-        </div>
+      {/* Main Content */}
+      <div className="max-w-[1760px] mx-auto px-6 sm:px-8 py-10">
+        <MyHotels />
       </div>
     </div>
   );

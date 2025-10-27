@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabased/supabasedClient";
+import { showSuccess, showError } from "../../utils/modalUtils";
 
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
-  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -14,7 +14,6 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage("");
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -23,16 +22,25 @@ const Login = () => {
       });
 
       if (error) {
-        setMessage(error.message);
-      } else if (data.user) {
-        setMessage("✅ Login successful! Redirecting...");
-        // Supabase automatically persists session in localStorage
-        setTimeout(() => navigate("/"), 1500);
+        showError(error.message, "Login Failed");
+        setLoading(false);
+        return;
+      }
+
+      if (data.user) {
+        showSuccess("Login successful! Redirecting...", "Success");
+        setLoading(false); // Reset loading state
+        // Give time for user to see the success message before redirect
+        setTimeout(() => {
+          navigate("/");
+        }, 1500);
+      } else {
+        showError("Login failed. No user data returned.", "Login Failed");
+        setLoading(false);
       }
     } catch (err) {
       console.error("LOGIN ERROR:", err);
-      setMessage("Something went wrong. Please try again later.");
-    } finally {
+      showError("Something went wrong. Please try again later.", "Error");
       setLoading(false);
     }
   };
@@ -85,16 +93,6 @@ const Login = () => {
               {loading ? "⏳ Logging in..." : "🔐 Sign In"}
             </button>
           </form>
-
-          {message && (
-            <div className={`mt-4 p-3 rounded-lg text-center text-sm ${
-              message.startsWith("✅")
-                ? "bg-green-100 text-green-700 border-2 border-green-300"
-                : "bg-red-100 text-red-700 border-2 border-red-300"
-            }`}>
-              {message}
-            </div>
-          )}
 
           <p className="mt-6 text-center text-gray-600 text-sm">
             Don't have an account?{" "}

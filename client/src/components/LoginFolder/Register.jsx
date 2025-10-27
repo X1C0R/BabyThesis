@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../images/logo.png";
+import { showSuccess, showError, showConfirm } from "../../utils/modalUtils";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -15,7 +16,6 @@ const Register = () => {
   });
   const [profileImage, setProfileImage] = useState(null);
   const [idImage, setIdImage] = useState(null);
-  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -76,10 +76,9 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage("");
     
     if (!validateForm()) {
-      setMessage("Please fix the errors before submitting.");
+      showError("Please fix the errors before submitting.", "Validation Error");
       return;
     }
 
@@ -107,14 +106,14 @@ const Register = () => {
       const data = await res.json();
 
       if (res.ok) {
-        setMessage("Registration successful! Redirecting to login...");
+        showSuccess("Registration successful! Redirecting to login...", "Success");
         setTimeout(() => navigate("/login"), 2000);
       } else {
-        setMessage(data.error || "Something went wrong!");
+        showError(data.error || "Something went wrong!", "Registration Failed");
       }
     } catch (err) {
       console.error(err);
-      setMessage("Server error. Please try again.");
+      showError("Server error. Please try again.", "Error");
     } finally {
       setLoading(false);
     }
@@ -392,17 +391,6 @@ const Register = () => {
                     )}
                   </button>
                 </form>
-
-                {/* Message */}
-                {message && (
-                  <div className={`mt-4 p-3 rounded-lg text-center text-sm ${
-                    message.includes("successful") 
-                      ? "bg-green-100 text-green-700 border-2 border-green-300" 
-                      : "bg-red-100 text-red-700 border-2 border-red-300"
-                  }`}>
-                    {message}
-                  </div>
-                )}
 
                 {/* Login Link */}
                 <p className="mt-4 text-center text-gray-600 text-sm">

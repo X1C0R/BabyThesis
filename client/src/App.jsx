@@ -6,55 +6,118 @@ import Register from "./components/LoginFolder/Register";
 import UserLanding from "./components/landingpages/UserLanding";
 import Login from "./components/LoginFolder/login";
 import Accommodation from "./components/Accommodation/Accommodation";
+import AddPropertyPage from "./components/Accommodation/AddPropertyPage";
+import PropertyDetailPage from "./components/Accommodation/PropertyDetailPage";
 import AdminProvesAccounts from "./components/Admin/AdminProvesAccounts";
+import { showConfirm } from "./utils/modalUtils";
 
 // Layout component with global navbar
 function Layout() {
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const currentUser = sessionData?.session?.user;
-      if (!currentUser) {
-        setUser(null);
-        setLoadingUser(false);
-        return;
-      }
+    const fetchUserData = async (userId) => {
+      try {
+        const { data, error } = await supabase
+          .from("users")
+          .select("role, is_approved")
+          .eq("id", userId)
+          .single();
 
-      const { data, error } = await supabase
-        .from("users")
-        .select("role, is_approved")
-        .eq("id", currentUser.id)
-        .single();
-
-      if (!error && data) {
-        setUser({ ...currentUser, ...data });
-      } else {
-        setUser(currentUser);
+        if (!error && data) {
+          return data;
+        }
+      } catch (err) {
+        console.error("Error fetching user data:", err);
       }
-      setLoadingUser(false);
+      return null;
     };
 
-    fetchUserData();
-
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        if (session?.user) {
-          setUser(prev => ({ ...prev, ...session.user }));
-        } else {
+    const initializeUser = async () => {
+      try {
+        console.log("Initializing user...");
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error("Session error:", sessionError);
           setUser(null);
+          setLoadingUser(false);
+          return;
         }
-      }
-    );
+        
+        const currentUser = sessionData?.session?.user;
+        if (!currentUser) {
+          console.log("No current user");
+          setUser(null);
+          setLoadingUser(false);
+          return;
+        }
 
-    return () => listener.subscription.unsubscribe();
+        console.log("Fetching user data for:", currentUser.id);
+        const userData = await fetchUserData(currentUser.id);
+        if (userData) {
+          console.log("User data fetched:", userData);
+          setUser({ ...currentUser, ...userData });
+        } else {
+          console.log("No user data found");
+          setUser(currentUser);
+        }
+        setLoadingUser(false);
+        setIsInitializing(false);
+      } catch (err) {
+        console.error("Error initializing user:", err);
+        setUser(null);
+        setLoadingUser(false);
+        setIsInitializing(false);
+      }
+    };
+
+    initializeUser();
+
+    // Set up auth state listener after a short delay to avoid race conditions
+    const listenerTimeout = setTimeout(() => {
+      const { data: listener } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          console.log("Auth state changed:", event);
+          
+          if (session?.user) {
+            console.log("Setting user from auth state change");
+            const userData = await fetchUserData(session.user.id);
+            if (userData) {
+              setUser({ ...session.user, ...userData });
+            } else {
+              setUser(session.user);
+            }
+          } else {
+            setUser(null);
+          }
+        }
+      );
+      
+      // Store the listener for cleanup
+      window.supabaseListener = listener;
+    }, 100);
+
+    return () => {
+      clearTimeout(listenerTimeout);
+      if (window.supabaseListener?.subscription) {
+        window.supabaseListener.subscription.unsubscribe();
+      }
+    };
   }, []);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
+    showConfirm(
+      "Are you sure you want to logout?",
+      async () => {
+        await supabase.auth.signOut();
+        setUser(null);
+      },
+      null,
+      "Confirm Logout"
+    );
   };
 
   if (loadingUser) {
@@ -85,6 +148,8 @@ function App() {
           <Route path="/register" element={<Register/>}/>
           <Route path="/" element={<UserLanding/>}/>
           <Route path="/accommodation" element={<Accommodation/>}/>
+          <Route path="/add-property" element={<AddPropertyPage/>}/>
+          <Route path="/property/:id" element={<PropertyDetailPage/>}/>
           <Route path="/AdminProvesAccounts" element={<AdminProvesAccounts/>}/>
         </Route>
       </Routes>
