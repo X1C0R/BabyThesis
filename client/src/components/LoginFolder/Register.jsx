@@ -127,7 +127,7 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50">
       <Navbar user={null} onLogout={handleLogout} />
       
       <div className="pt-24 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -135,7 +135,7 @@ const Register = () => {
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-2 border-gray-100">
           <div className="flex flex-col lg:flex-row">
             {/* Left Side - Branding */}
-            <div className="lg:w-1/3 bg-gradient-to-br from-blue-500 to-purple-600 p-8 lg:p-12 flex flex-col justify-center items-center relative overflow-hidden">
+            <div className="lg:w-1/3 bg-linear-to-br from-blue-500 to-purple-600 p-8 lg:p-12 flex flex-col justify-center items-center relative overflow-hidden">
               {/* Decorative circles */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
               <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/5 rounded-full -ml-48 -mb-48"></div>
@@ -174,7 +174,7 @@ const Register = () => {
                   Create Your Account
                 </h2>
                 <p className="text-gray-600 mb-6 text-sm">
-                  Join AccommodationHub and discover amazing places to stay
+                  Join EssentiaLokal and discover amazing places to stay
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-3">
@@ -388,7 +388,7 @@ const Register = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 px-4 rounded-xl text-white font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transform hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm"
+                    className="w-full py-3 px-4 rounded-xl text-white font-semibold bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transform hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm"
                   >
                     {loading ? (
                       <span className="flex items-center justify-center">

@@ -224,27 +224,27 @@ app.post(
   ]),
   async (req, res) => {
     try {
-      console.log("REQ.BODY:", req.body);
-      console.log("REQ.FILES:", req.files);
-
-      const { user_id, name, description, location, price, availableDates } = req.body;
+      const { user_id, name, description, location, price, availableDates } =
+        req.body;
 
       if (!user_id || !name || !location || !price) {
         return res.status(400).json({ error: "Missing required fields" });
       }
 
-      const getDates = availableDates ? JSON.parse(availableDates) : []; 
+      // Parse dates array if sent as JSON string
+      const getDates = availableDates ? JSON.parse(availableDates) : [];
 
+      // Get coordinates
       const coords = await TranslateLocation(location);
-
       if (!coords.latitude || !coords.longitude) {
         return res.status(400).json({
           error:
-            "Location not found. Please enter a valid city or address (e.g., Taguig City, Philippines).",
+            "Location not found. Please enter a valid city or address.",
         });
       }
 
-      const UploadImg = async (file, folder) => {
+      // Upload images
+      const uploadFile = async (file, folder) => {
         if (!file) return null;
 
         const fileName = `${Date.now()}-${file.originalname}`;
@@ -259,23 +259,18 @@ app.post(
           return null;
         }
 
-        const { data } = supabase.storage
+        const { data: urlData } = supabase.storage
           .from("hotels-images")
           .getPublicUrl(filePath);
 
-        return data.publicUrl;
+        return urlData.publicUrl;
       };
 
+      const frontUrl = await uploadFile(req.files?.frontdisplay?.[0], "front");
+      const roomUrl = await uploadFile(req.files?.room?.[0], "room");
+      const othersUrl = await uploadFile(req.files?.others?.[0], "others");
 
-      const frontFile = req.files?.frontdisplay?.[0] || null;
-      const roomFile = req.files?.room?.[0] || null;
-      const otherFile = req.files?.others?.[0] || null;
-
-      const FirstImage = await UploadImg(frontFile, "frontdisplay");
-      const RoomImage = await UploadImg(roomFile, "room");
-      const OtherImage = await UploadImg(otherFile, "others");
-
-
+      // Insert into hotels table using SERVICE ROLE (bypasses RLS)
       const { data, error } = await supabase
         .from("hotels")
         .insert([
@@ -285,12 +280,12 @@ app.post(
             description,
             location,
             price: parseFloat(price),
-            availableDates: getDates,
+            available_dates: getDates,
             latitude: coords.latitude,
             longitude: coords.longitude,
-            frontdisplay: FirstImage,
-            room: RoomImage,
-            others: OtherImage,
+            frontdisplay_url: frontUrl,
+            room_url: roomUrl,
+            others_url: othersUrl,
           },
         ])
         .select();
@@ -304,6 +299,7 @@ app.post(
     }
   }
 );
+
 
 
 

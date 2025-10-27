@@ -9,46 +9,55 @@ const UserLanding = () => {
   const [loadingUser, setLoadingUser] = useState(true);
 
   // Fetch user session and role/approval from users table
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const currentUser = sessionData?.session?.user;
-      if (!currentUser) {
-        setUser(null);
-        setLoadingUser(false);
-        return;
-      }
+useEffect(() => {
+  const fetchUserData = async () => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const currentUser = sessionData?.session?.user;
+    if (!currentUser) {
+      setUser(null);
+      setLoadingUser(false);
+      return;
+    }
 
-      // Fetch role and approval from users table
+    // Fetch role and approval from users table
+    const { data, error } = await supabase
+      .from("users")
+      .select("role, is_approved")
+      .eq("id", currentUser.id)
+      .single();
+
+    if (!error && data) {
+      setUser({ ...currentUser, ...data });
+    } else {
+      setUser(currentUser);
+    }
+    setLoadingUser(false);
+  };
+
+  fetchUserData();
+
+  // Listen for auth changes
+  const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    if (session?.user) {
+      // refetch user role & approval on auth change
       const { data, error } = await supabase
         .from("users")
         .select("role, is_approved")
-        .eq("id", currentUser.id)
+        .eq("id", session.user.id)
         .single();
 
       if (!error && data) {
-        setUser({ ...currentUser, ...data });
+        setUser({ ...session.user, ...data });
       } else {
-        setUser(currentUser); // fallback if error
+        setUser(session.user);
       }
-      setLoadingUser(false);
-    };
+    } else {
+      setUser(null);
+    }
+  });
 
-    fetchUserData();
-
-    // Listen for auth changes
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        if (session?.user) {
-          setUser(prev => ({ ...prev, ...session.user }));
-        } else {
-          setUser(null);
-        }
-      }
-    );
-
-    return () => listener.subscription.unsubscribe();
-  }, []);
+  return () => listener.subscription.unsubscribe();
+}, []);
 
   const LogOut = async () => {
     const confirmLogout = window.confirm("Are you sure you want to logout?");
@@ -75,7 +84,7 @@ const UserLanding = () => {
       <Navbar user={user} onLogout={LogOut} />
       
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-white to-blue-50 pt-32 pb-20">
+      <section className="bg-linear-to-br from-white to-blue-50 pt-32 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 mb-6">
@@ -95,7 +104,7 @@ const UserLanding = () => {
                   placeholder="Where are you going?"
                   className="flex-1 border-none outline-none text-gray-700 placeholder-gray-400 text-lg"
                 />
-                <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg">
+                <button className="bg-linear-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg">
                   🔍 Search
                 </button>
               </div>
@@ -125,7 +134,7 @@ const UserLanding = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-5">
-              Why Choose AccommodationHub?
+              Why Choose EssentiaLokal?
             </h2>
             <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
               We provide the best accommodation booking experience with trusted partners and excellent service.
@@ -161,7 +170,7 @@ const UserLanding = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
+      <section className="py-20 bg-linear-to-r from-blue-600 to-purple-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Ready to Find Your Perfect Stay?
@@ -202,7 +211,7 @@ const UserLanding = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-lg font-semibold mb-4">AccommodationHub</h3>
+              <h3 className="text-lg font-semibold mb-4">EssentiaLokal</h3>
               <p className="text-gray-400">
                 Your trusted partner for finding the perfect accommodation.
               </p>
@@ -233,7 +242,7 @@ const UserLanding = () => {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 AccommodationHub. All rights reserved.</p>
+            <p>&copy; 2024 EssentiaLokal. All rights reserved.</p>
           </div>
         </div>
       </footer>

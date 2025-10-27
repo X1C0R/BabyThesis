@@ -86,12 +86,12 @@ const AddHotels = ({ onHotelAdded, onClose }) => {
       const uploadImage = async (file, path) => {
         if (!file) return null;
         const { data, error } = await supabase.storage
-          .from("hotel-images")
+          .from("hotels-images")
           .upload(path, file, { upsert: true });
         if (error) throw error;
 
         const { data: urlData } = supabase.storage
-          .from("hotel-images")
+          .from("hotels-images")
           .getPublicUrl(path);
         return urlData.publicUrl;
       };
@@ -269,7 +269,7 @@ const AddHotels = ({ onHotelAdded, onClose }) => {
                 placeholder="Description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="border p-2 rounded outline-none"
+                className="border-b p-2 outline-none"
               />
             </div>
 

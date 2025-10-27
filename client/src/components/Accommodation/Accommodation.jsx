@@ -12,48 +12,55 @@ const Accommodation = () => {
   const [ShowAddHotels, setShowAddHotels] = useState(false);
 
   // Fetch user session and role/approval from users table
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const currentUser = sessionData?.session?.user;
-      if (!currentUser) {
-        setUser(null);
-        setLoadingUser(false);
-        navigate("/login");
-        return;
-      }
+ useEffect(() => {
+  const fetchUserData = async () => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const currentUser = sessionData?.session?.user;
+    if (!currentUser) {
+      setUser(null);
+      setLoadingUser(false);
+      navigate("/login");
+      return;
+    }
 
-      // Fetch role and approval from users table
+    const { data, error } = await supabase
+      .from("users")
+      .select("role, is_approved")
+      .eq("id", currentUser.id)
+      .single();
+
+    if (!error && data) {
+      setUser({ ...currentUser, ...data });
+    } else {
+      setUser(currentUser);
+    }
+    setLoadingUser(false);
+  };
+
+  fetchUserData();
+
+  const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    if (session?.user) {
+      // refetch full user info to get role & approval
       const { data, error } = await supabase
         .from("users")
         .select("role, is_approved")
-        .eq("id", currentUser.id)
+        .eq("id", session.user.id)
         .single();
 
       if (!error && data) {
-        setUser({ ...currentUser, ...data });
+        setUser({ ...session.user, ...data });
       } else {
-        setUser(currentUser); // fallback if error
+        setUser(session.user);
       }
-      setLoadingUser(false);
-    };
+    } else {
+      setUser(null);
+      navigate("/login");
+    }
+  });
 
-    fetchUserData();
-
-    // Listen for auth changes
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        if (session?.user) {
-          setUser(prev => ({ ...prev, ...session.user }));
-        } else {
-          setUser(null);
-          navigate("/login");
-        }
-      }
-    );
-
-    return () => listener.subscription.unsubscribe();
-  }, [navigate]);
+  return () => listener.subscription.unsubscribe();
+}, [navigate]);
 
   const LogOut = async () => {
     const confirmLogout = window.confirm("Are you sure you want to logout?");
@@ -157,10 +164,12 @@ const Accommodation = () => {
         </div>
       </div>
       <div className="text-center text-2xl mt-1.5">
-      <h1>My Accomodation</h1>
+      {/* <h1>My Accomodation</h1> */}
       </div>
-    {ShowAddHotels && <AddHotels/>}
-    <MyHotels/>
+    {ShowAddHotels && 
+      <AddHotels/>}
+{/* 
+    <MyHotels/> */}
     </div>
   );
 };

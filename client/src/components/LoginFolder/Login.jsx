@@ -44,7 +44,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50">
       <Navbar user={null} onLogout={handleLogout} />
       
       <div className="pt-24 pb-12 px-4">
@@ -53,7 +53,7 @@ const Login = () => {
             Welcome Back
           </h2>
           <p className="text-center text-gray-600 mb-8">
-            Sign in to your AccommodationHub account
+            Sign in to your EssentiaLokal account
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
