@@ -1,5 +1,31 @@
 @import "tailwindcss";
 
+/* Custom Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  border-radius: 10px;
+  border: 2px solid #F1F5F9;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #2563EB, #7C3AED);
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3B82F6 #F1F5F9;
+}
 
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
@@ -13,17 +39,35 @@ input[type=number] {
 }
 
 .nav-button {
-  color: black;
-  border: none;
-  padding: 10px 20px;
+  color: #4B5563;
+  border: 1px solid #E5E7EB;
+  padding: 8px 16px;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
+  background: white;
+  font-weight: 500;
+  font-size: 14px;
 }
 
 .nav-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #3B82F6;
+  color: #3B82F6;
+  background: #F0F9FF;
+}
+
+.nav-button.primary {
+  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  color: white;
+  border: none;
+}
+
+.nav-button.primary:hover {
+  background: linear-gradient(135deg, #2563EB, #7C3AED);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .custom-file-input {
