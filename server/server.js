@@ -335,6 +335,8 @@ app.get("/hotels/:userId", async (req, res) => {
       .order("created_at", { ascending: false });
 
     if (error) throw error;
+
+
 app.get("/UserProfile/:id", authenticateUser, async (req, res) => {
   try {
     const { id } = req.params;
@@ -371,19 +373,41 @@ app.get("/UserProfile/:id", authenticateUser, async (req, res) => {
 // Get all hotels
 app.get("/hotels", async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from("hotels")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("hotels").select("*");
 
-    if (error) throw error;
+    if (error) {
+      console.error("Supabase error:", error.message);
+      throw error;
+    }
 
-    res.json({ success: true, hotels: data });
-  } catch (error) {
-    console.error("GET ALL HOTELS ERROR:", error);
-    res.status(500).json({ error: error.message });
+    console.log("Fetched from Supabase:", data);
+    res.status(200).json(data || []);
+  } catch (err) {
+    console.error("Error fetching hotels:", err.message);
+    res.status(500).json({ error: err.message });
   }
 });
+
+
+
+app.get("/search", async (req,res) => {
+  try {
+    const { location } = req.query;
+
+    if(!location) {
+      return res.status(400).json({error: "location is required"});
+    }
+
+    const {data, error} = await supabase.from("hotels").select("*").ilike("location", `${location}%`); 
+
+    if(error) throw error;
+
+    res.status(200).json(data || []);
+  } catch (err) {
+      console.error("Error searching hotels:", err.message);
+    res.status(500).json({ error: "Failed to search hotels" });
+  }
+})
 
 export default app;
 const PORT = process.env.PORT || 4000;

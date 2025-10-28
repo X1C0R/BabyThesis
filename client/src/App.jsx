@@ -10,7 +10,8 @@ import AddPropertyPage from "./components/Accommodation/AddPropertyPage";
 import PropertyDetailPage from "./components/Accommodation/PropertyDetailPage";
 import AdminProvesAccounts from "./components/Admin/AdminProvesAccounts";
 import { showConfirm } from "./utils/modalUtils";
-
+import Hotels from "./components/Accommodation/Hotels";
+import SearchHotels from "./components/Accommodation/SearchHotels";
 // Layout component with global navbar
 function Layout() {
   const [user, setUser] = useState(null);
@@ -80,7 +81,7 @@ function Layout() {
     const listenerTimeout = setTimeout(() => {
       const { data: listener } = supabase.auth.onAuthStateChange(
         async (event, session) => {
-          console.log("Auth state changed:", event);
+          // console.log("Auth state changed:", event);
           
           if (session?.user) {
             console.log("Setting user from auth state change");
@@ -151,6 +152,8 @@ function App() {
           <Route path="/add-property" element={<AddPropertyPage/>}/>
           <Route path="/property/:id" element={<PropertyDetailPage/>}/>
           <Route path="/AdminProvesAccounts" element={<AdminProvesAccounts/>}/>
+          <Route path="/Hotels" element={<Hotels/>}/>
+          <Route path="/Search" element={<SearchHotels/>}/>
         </Route>
       </Routes>
     </Router>

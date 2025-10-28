@@ -1,10 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 
 const UserLanding = () => {
   const navigate = useNavigate();
   const context = useOutletContext();
   const user = context?.user || null;
+  const [searchTerm, setSearchTerm] = useState("");
+
+
+  const SearchHotels = () => {
+    if(searchTerm.trim() === "") return;
+    navigate(`/Search?location=${encodeURIComponent(searchTerm)}`);
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -25,11 +32,13 @@ const UserLanding = () => {
             <div className="max-w-2xl mx-auto mb-16">
               <div className="flex items-center bg-white rounded-2xl shadow-lg border border-gray-200 px-6 py-4 focus-within:shadow-xl transition-shadow">
                 <input
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   type="text"
-                  placeholder="Where are you going?"
+                  placeholder="Search Destination"
                   className="flex-1 border-none outline-none text-gray-700 placeholder-gray-400 text-lg"
                 />
-                <button className="bg-linear-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg">
+                <button onClick={SearchHotels} className="bg-linear-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg">
                   🔍 Search
                 </button>
               </div>

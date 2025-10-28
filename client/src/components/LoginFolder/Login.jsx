@@ -16,7 +16,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: form.email,
         password: form.password,
       });
@@ -46,7 +46,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-24">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 pt-24">
       <div className="pb-12 px-4">
         <div className="max-w-md mx-auto bg-white shadow-xl rounded-2xl p-8 border border-gray-200">
           <h2 className="text-3xl font-extrabold text-gray-900 mb-2 text-center">
