@@ -1,88 +1,13 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "../supabased/supabasedClient";
-import Navbar from "../Navbar";
+import React from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
 
 const UserLanding = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [loadingUser, setLoadingUser] = useState(true);
-
-  // Fetch user session and role/approval from users table
-useEffect(() => {
-  const fetchUserData = async () => {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const currentUser = sessionData?.session?.user;
-    if (!currentUser) {
-      setUser(null);
-      setLoadingUser(false);
-      return;
-    }
-
-    // Fetch role and approval from users table
-    const { data, error } = await supabase
-      .from("users")
-      .select("role, is_approved")
-      .eq("id", currentUser.id)
-      .single();
-
-    if (!error && data) {
-      setUser({ ...currentUser, ...data });
-    } else {
-      setUser(currentUser);
-    }
-    setLoadingUser(false);
-  };
-
-  fetchUserData();
-
-  // Listen for auth changes
-  const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
-    if (session?.user) {
-      // refetch user role & approval on auth change
-      const { data, error } = await supabase
-        .from("users")
-        .select("role, is_approved")
-        .eq("id", session.user.id)
-        .single();
-
-      if (!error && data) {
-        setUser({ ...session.user, ...data });
-      } else {
-        setUser(session.user);
-      }
-    } else {
-      setUser(null);
-    }
-  });
-
-  return () => listener.subscription.unsubscribe();
-}, []);
-
-  const LogOut = async () => {
-    const confirmLogout = window.confirm("Are you sure you want to logout?");
-    if (confirmLogout) {
-      await supabase.auth.signOut();
-      setUser(null);
-      navigate("/");
-    }
-  };
-
-  if (loadingUser) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  const context = useOutletContext();
+  const user = context?.user || null;
 
   return (
     <div className="min-h-screen bg-white">
-      <Navbar user={user} onLogout={LogOut} />
-      
       {/* Hero Section */}
       <section className="bg-linear-to-br from-white to-blue-50 pt-32 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -187,22 +112,22 @@ useEffect(() => {
                 >
                   🚀 Get Started
                 </button>
-                <button 
+            <button
                   className="nav-button text-lg px-8 py-4"
                   onClick={() => navigate("/login")}
-                >
+            >
                   🔐 Sign In
-                </button>
+            </button>
               </>
             ) : (
-              <button 
+            <button
                 className="nav-button primary text-lg px-8 py-4"
                 onClick={() => navigate("/accommodation")}
-              >
+            >
                 🏠 Browse Accommodations
-              </button>
-            )}
-          </div>
+            </button>
+          )}
+        </div>
         </div>
       </section>
 
@@ -242,8 +167,8 @@ useEffect(() => {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 EssentiaLokal. All rights reserved.</p>
-          </div>
+            <p>&copy; 2024 AccommodationHub. All rights reserved.</p>
+      </div>
         </div>
       </footer>
     </div>

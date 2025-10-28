@@ -1,26 +1,19 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; // ✅ fixed import
 import { supabase } from "../supabased/supabasedClient";
-import Navbar from "../Navbar";
+import { showSuccess, showError } from "../../utils/modalUtils";
 
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
-  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage("");
 
     try {
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
@@ -28,46 +21,33 @@ const Login = () => {
         password: form.password,
       });
 
-      if (authError) {
-        setMessage(authError.message);
+      if (error) {
+        showError(error.message, "Login Failed");
+        setLoading(false);
         return;
       }
 
-      if (authData.user) {
-        // ✅ Get the user's role from the "users" table
-        const { data: userData, error: userError } = await supabase
-          .from("users")
-          .select("role")
-          .eq("id", authData.user.id)
-          .single();
-
-        if (userError) {
-          console.error("Error fetching role:", userError);
-        } else {
-          // ✅ Store the role and token locally
-          localStorage.setItem("userRole", userData.role);
-          const token = authData.session.access_token; // ✅ fixed variable
-          localStorage.setItem("accessToken", token);
-          console.log("Access token:", token);
-          console.log("Logged in user role:", userData.role);
-        }
-
-        setMessage("✅ Login successful! Redirecting...");
-        setTimeout(() => navigate("/"), 1500);
+      if (data.user) {
+        showSuccess("Login successful! Redirecting...", "Success");
+        setLoading(false); // Reset loading state
+        // Give time for user to see the success message before redirect
+        setTimeout(() => {
+          navigate("/");
+        }, 1500);
+      } else {
+        showError("Login failed. No user data returned.", "Login Failed");
+        setLoading(false);
       }
     } catch (err) {
       console.error("LOGIN ERROR:", err);
-      setMessage("Something went wrong. Please try again later.");
-    } finally {
+      showError("Something went wrong. Please try again later.", "Error");
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50">
-      <Navbar user={null} onLogout={handleLogout} />
-
-      <div className="pt-24 pb-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-24">
+      <div className="pb-12 px-4">
         <div className="max-w-md mx-auto bg-white shadow-xl rounded-2xl p-8 border border-gray-200">
           <h2 className="text-3xl font-extrabold text-gray-900 mb-2 text-center">
             Welcome Back
@@ -113,18 +93,6 @@ const Login = () => {
               {loading ? "⏳ Logging in..." : "🔐 Sign In"}
             </button>
           </form>
-
-          {message && (
-            <div
-              className={`mt-4 p-3 rounded-lg text-center text-sm ${
-                message.startsWith("✅")
-                  ? "bg-green-100 text-green-700 border-2 border-green-300"
-                  : "bg-red-100 text-red-700 border-2 border-red-300"
-              }`}
-            >
-              {message}
-            </div>
-          )}
 
           <p className="mt-6 text-center text-gray-600 text-sm">
             Don't have an account?{" "}

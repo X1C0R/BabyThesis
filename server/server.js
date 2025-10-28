@@ -242,33 +242,25 @@ app.post(
   upload.fields([
     { name: "frontdisplay", maxCount: 1 },
     { name: "room", maxCount: 1 },
-    { name: "others", maxCount: 1 },
+    { name: "others", maxCount: 10 }, // Allow multiple images
   ]),
   async (req, res) => {
     try {
-      const { user_id, name, description, location, price, availableDates } =
-        req.body;
+      const { user_id, name, description, location, price } = req.body;
 
       if (!user_id || !name || !location || !price) {
         return res.status(400).json({ error: "Missing required fields" });
       }
 
-
-      const getDates = availableDates ? JSON.parse(availableDates) : [];
-
-
       const coords = await TranslateLocation(location);
       if (!coords.latitude || !coords.longitude) {
         return res.status(400).json({
-          error:
-            "Location not found. Please enter a valid city or address.",
+          error: "Location not found. Please enter a valid city or address.",
         });
       }
 
- 
       const uploadFile = async (file, folder) => {
         if (!file) return null;
-
         const fileName = `${Date.now()}-${file.originalname}`;
         const filePath = `${folder}/${fileName}`;
 
@@ -281,17 +273,23 @@ app.post(
           return null;
         }
 
-        const { data: urlData } = supabase.storage
+        const { data } = supabase.storage
           .from("hotels-images")
           .getPublicUrl(filePath);
-
-        return urlData.publicUrl;
+        return data.publicUrl;
       };
 
-      const frontUrl = await uploadFile(req.files?.frontdisplay?.[0], "front");
+      const frontUrl = await uploadFile(req.files?.frontdisplay?.[0], "frontdisplay");
       const roomUrl = await uploadFile(req.files?.room?.[0], "room");
-      const othersUrl = await uploadFile(req.files?.others?.[0], "others");
 
+      // Handle multiple additional images
+      let othersUrls = [];
+      if (req.files?.others && Array.isArray(req.files.others) && req.files.others.length > 0) {
+        for (const file of req.files.others) {
+          const url = await uploadFile(file, "others");
+          if (url) othersUrls.push(url);
+        }
+      }
 
       const { data, error } = await supabase
         .from("hotels")
@@ -302,19 +300,22 @@ app.post(
             description,
             location,
             price: parseFloat(price),
-            available_dates: getDates,
             latitude: coords.latitude,
             longitude: coords.longitude,
-            frontdisplay_url: frontUrl,
-            room_url: roomUrl,
-            others_url: othersUrl,
+            frontdisplay: frontUrl,
+            room: roomUrl,
+            others: othersUrls.length > 0 ? othersUrls.join(',') : null,
           },
         ])
         .select();
 
       if (error) throw error;
 
-      res.json({ message: "Hotel added successfully", hotel: data[0] });
+      if (data && data.length > 0) {
+        res.json({ message: "Hotel added successfully", hotel: data[0] });
+      } else {
+        res.json({ message: "Hotel added successfully" });
+      }
     } catch (err) {
       console.error("AddHotels Route Error:", err);
       res.status(500).json({ error: err.message });
@@ -322,6 +323,18 @@ app.post(
   }
 );
 
+// Get hotels for a specific user
+app.get("/hotels/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const { data, error } = await supabase
+      .from("hotels")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
 app.get("/UserProfile/:id", authenticateUser, async (req, res) => {
   try {
     const { id } = req.params;
@@ -348,7 +361,29 @@ app.get("/UserProfile/:id", authenticateUser, async (req, res) => {
   }
 });
 
+    res.json({ success: true, hotels: data });
+  } catch (error) {
+    console.error("GET HOTELS ERROR:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
+// Get all hotels
+app.get("/hotels", async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("hotels")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    res.json({ success: true, hotels: data });
+  } catch (error) {
+    console.error("GET ALL HOTELS ERROR:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 export default app;
 const PORT = process.env.PORT || 4000;

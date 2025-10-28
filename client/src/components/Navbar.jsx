@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "./images/logo.png";
+import { showError } from "../utils/modalUtils";
 
 const Navbar = ({ user, onLogout }) => {
   const navigate = useNavigate();
@@ -9,8 +10,9 @@ const Navbar = ({ user, onLogout }) => {
     if (user?.role?.toUpperCase() === "LANDLORD" && user?.is_approved) {
       navigate("/accommodation");
     } else {
-      alert(
-        "Your account is not yet approved by the admin. Please wait for approval."
+      showError(
+        "Your account is not yet approved by the admin. Please wait for approval.",
+        "Access Denied"
       );
     }
   };
