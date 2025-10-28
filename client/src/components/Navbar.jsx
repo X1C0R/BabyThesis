@@ -28,7 +28,7 @@ const Navbar = ({ user, onLogout }) => {
               onClick={() => navigate("/")}
             />
             <span className="ml-3 text-gray-900 font-bold text-xl hidden sm:block">
-              AccommodationHub
+              EssentiaLokal
             </span>
           </div>
 
