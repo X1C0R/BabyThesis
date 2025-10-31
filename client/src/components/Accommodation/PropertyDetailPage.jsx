@@ -6,7 +6,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-// Fix for default marker icon in Leaflet with Webpack
+
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -31,7 +31,7 @@ const PropertyDetailPage = () => {
       }
 
       try {
-        // First try to get from user's hotels
+
         const response = await axios.get(`http://localhost:4000/hotels/${user?.id}`);
         
         if (response.data?.success && response.data?.hotels) {
@@ -82,7 +82,7 @@ const PropertyDetailPage = () => {
     );
   }
 
-  // Parse images
+
   const otherImages = property.others ? (typeof property.others === 'string' ? property.others.split(',') : property.others) : [];
   const allImages = [
     property.frontdisplay,
@@ -107,7 +107,7 @@ const PropertyDetailPage = () => {
         </div>
       </div>
 
-      {/* Main Content */}
+
       <div className="max-w-[1760px] mx-auto px-6 sm:px-8 py-10">
         {/* Airbnb-style Image Gallery */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 h-[400px] lg:h-[600px] mb-12 rounded-2xl overflow-hidden">
@@ -126,7 +126,7 @@ const PropertyDetailPage = () => {
             )}
           </div>
           
-          {/* Top Right Images */}
+     
           <div className="relative group overflow-hidden">
             {allImages[1] ? (
               <img
@@ -154,7 +154,7 @@ const PropertyDetailPage = () => {
             )}
           </div>
           
-          {/* Bottom Right Images */}
+      
           <div className="relative group overflow-hidden">
             {allImages[3] ? (
               <img
@@ -195,7 +195,7 @@ const PropertyDetailPage = () => {
           </div>
         </div>
 
-        {/* Property Info */}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Main Info */}
           <div className="lg:col-span-2">
@@ -220,7 +220,7 @@ const PropertyDetailPage = () => {
 
             <hr className="border-gray-200 my-8" />
 
-            {/* Description */}
+
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">About this property</h2>
               <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">
@@ -230,7 +230,6 @@ const PropertyDetailPage = () => {
 
             <hr className="border-gray-200 my-8" />
 
-            {/* Location Map Section */}
             <div>
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Location</h2>
               {property.latitude && property.longitude ? (
@@ -270,7 +269,7 @@ const PropertyDetailPage = () => {
             </div>
           </div>
 
-          {/* Right Column - Booking Panel */}
+
           <div>
             <div className="sticky top-24 border border-gray-300 rounded-2xl p-6 shadow-lg">
               <div className="mb-6">
@@ -281,7 +280,7 @@ const PropertyDetailPage = () => {
               </div>
 
               <div className="space-y-4 mb-6">
-                <button className="w-full py-3 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition-all">
+                <button className="w-full py-3 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition-all" onClick={() =>  navigate(`/editHotels/${property.id}`)}>
                   Edit Property
                 </button>
                 <button className="w-full py-3 border-2 border-gray-900 text-gray-900 rounded-lg font-semibold hover:bg-gray-50 transition-all">

@@ -126,7 +126,7 @@ const MyHotels = () => {
                 <div className="flex items-center gap-2">
                   <button 
                     className="px-4 py-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                    title="Edit property"
+                    title="Edit property" onClick={() => navigate(`/editHotels/${hotel.id}`)}
                   >
                     Edit
                   </button>

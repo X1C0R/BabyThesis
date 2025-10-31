@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Outlet, useParams  } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "./components/supabased/supabasedClient";
 import Navbar from "./components/Navbar";
@@ -12,6 +12,8 @@ import AdminProvesAccounts from "./components/Admin/AdminProvesAccounts";
 import { showConfirm } from "./utils/modalUtils";
 import Hotels from "./components/Accommodation/Hotels";
 import SearchHotels from "./components/Accommodation/SearchHotels";
+import EditHotels from "./components/Accommodation/EditHotels";
+
 // Layout component with global navbar
 function Layout() {
   const [user, setUser] = useState(null);
@@ -140,6 +142,11 @@ function Layout() {
   );
 }
 
+const EditHotelsWrapper = () => {
+  const { id } = useParams();
+  return <EditHotels hotelId={id} />;
+};
+
 function App() {
   return (
     <Router>
@@ -154,6 +161,7 @@ function App() {
           <Route path="/AdminProvesAccounts" element={<AdminProvesAccounts/>}/>
           <Route path="/Hotels" element={<Hotels/>}/>
           <Route path="/Search" element={<SearchHotels/>}/>
+          <Route path="/editHotels/:id" element={<EditHotels/>}/>
         </Route>
       </Routes>
     </Router>

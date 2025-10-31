@@ -44,6 +44,7 @@ npm install @react-google-maps/api
 npm install react-leaflet leaflet
 npm install @mui/material @emotion/react @emotion/styled @mui/x-date-pickers dayjs
 npm install jsonwebtoken
+npm install uuid
 
 ALTER TABLE hotels
 ADD COLUMN frontdisplay text,

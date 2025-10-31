@@ -4,6 +4,8 @@ import dotenv from "dotenv";
 import { supabase } from "./db/supabaseClient.js";
 import multer from "multer";
 import jwt from "jsonwebtoken";
+import { v4 as uuidv4 } from "uuid";
+
 
 dotenv.config();
 const apiKey = process.env.GOOGLE_API_KEY;
@@ -408,6 +410,130 @@ app.get("/search", async (req,res) => {
     res.status(500).json({ error: "Failed to search hotels" });
   }
 })
+
+
+app.get("/EditHotels/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ error: "Hotel ID is required" });
+    }
+
+
+    const isUUID = /^[0-9a-fA-F-]{36}$/.test(id);
+
+    let query = supabase.from("hotels").select("*");
+
+    if (isUUID) {
+      query = query.eq("id", id);
+    } else if (!isNaN(id)) {
+      query = query.eq("id", Number(id));
+    } else {
+      return res.status(400).json({ error: "Invalid hotel ID format" });
+    }
+
+    const { data, error } = await query.single();
+
+    if (error || !data) {
+      console.error("Supabase error:", error);
+      return res.status(404).json({ error: "Hotel not found" });
+    }
+
+    res.status(200).json(data);
+  } catch (err) {
+    console.error("Error fetching hotel:", err.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.put(
+  "/EditHotels/:id",
+  upload.fields([
+    { name: "frontdisplay", maxCount: 1 },
+    { name: "room", maxCount: 1 },
+    { name: "others", maxCount: 10 },
+  ]),
+  async (req, res) => {
+    const hotelId = req.params.id;
+    const { name, description, price } = req.body;
+
+    try {
+
+      const { data: existingHotel, error: hotelError } = await supabase
+        .from("hotels")
+        .select("*")
+        .eq("id", hotelId)
+        .single();
+
+      if (hotelError || !existingHotel) {
+        return res.status(404).json({ message: "Hotel not found." });
+      }
+
+
+      const updateData = {};
+      if (name) updateData.name = name;
+      if (description) updateData.description = description;
+      if (price) updateData.price = price;
+
+
+      const uploadFile = async (file, folder) => {
+        const filename = `${folder}/${uuidv4()}-${file.originalname}`;
+        const { data, error } = await supabase.storage
+          .from("hotels-images")
+          .upload(filename, file.buffer, {
+            cacheControl: "3600",
+            upsert: false,
+            contentType: file.mimetype,
+          });
+
+        if (error) throw error;
+
+        const { data: publicData } = supabase.storage
+          .from("hotels-images")
+          .getPublicUrl(filename);
+
+        return publicData.publicUrl;
+      };
+
+
+      if (req.files?.frontdisplay?.[0]) {
+        const url = await uploadFile(req.files.frontdisplay[0], "frontdisplay");
+        updateData.frontdisplay = url;
+      }
+
+      if (req.files?.room?.[0]) {
+        const url = await uploadFile(req.files.room[0], "room");
+        updateData.room = url;
+      }
+
+      if (req.files?.others?.length > 0) {
+        const urls = await Promise.all(
+          req.files.others.map((file) => uploadFile(file, "others"))
+        );
+        updateData.others = urls;
+      }
+
+ 
+      const { data, error } = await supabase
+        .from("hotels")
+        .update(updateData)
+        .eq("id", hotelId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      res.status(200).json({ message: "Hotel updated successfully", hotel: data });
+    } catch (error) {
+      console.error("Error updating hotel:", error.message);
+      res.status(500).json({
+        message: "Failed to update hotel.",
+        error: error.message,
+      });
+    }
+  }
+);
 
 export default app;
 const PORT = process.env.PORT || 4000;
