@@ -13,6 +13,8 @@ import { showConfirm } from "./utils/modalUtils";
 import Hotels from "./components/Accommodation/Hotels";
 import SearchHotels from "./components/Accommodation/SearchHotels";
 import EditHotels from "./components/Accommodation/EditHotels";
+import UserProfile from "./components/landingpages/UserProfile";
+
 
 // Layout component with global navbar
 function Layout() {
@@ -162,6 +164,7 @@ function App() {
           <Route path="/Hotels" element={<Hotels/>}/>
           <Route path="/Search" element={<SearchHotels/>}/>
           <Route path="/editHotels/:id" element={<EditHotels/>}/>
+          <Route path="/profile" element={<UserProfile/>}/>
         </Route>
       </Routes>
     </Router>
