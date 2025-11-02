@@ -16,7 +16,7 @@ const EditHotels = () => {
   const [others, setOthers] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // 🟢 FETCH HOTEL DATA FROM BACKEND
+  // FETCH HOTEL DATA FROM BACKEND
   useEffect(() => {
     const fetchHotel = async () => {
       try {

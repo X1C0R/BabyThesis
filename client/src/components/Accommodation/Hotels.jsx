@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 const Hotels = () => {
   const [hotels, setHotels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const { id } = useParams();
 
-  // Fetch data from your backend
+  // Fetch data from  backend
   const fetchHotels = async () => {
     try {
       const response = await fetch("http://localhost:4000/hotels");
@@ -38,6 +41,7 @@ const Hotels = () => {
           <div
             key={hotel.id}
             className="bg-white p-4 rounded-2xl shadow-md hover:shadow-lg transition-all"
+            onClick={() => navigate(`/SelectedHotel/${hotel.id}`)}
           >
             {hotel.frontdisplay ? (
               <img

@@ -14,6 +14,7 @@ import Hotels from "./components/Accommodation/Hotels";
 import SearchHotels from "./components/Accommodation/SearchHotels";
 import EditHotels from "./components/Accommodation/EditHotels";
 import UserProfile from "./components/landingpages/UserProfile";
+import HotelInformationUser from "./components/Accommodation/HotelInformationUser";
 
 
 // Layout component with global navbar
@@ -149,6 +150,11 @@ const EditHotelsWrapper = () => {
   return <EditHotels hotelId={id} />;
 };
 
+const SelectedHotels = () => {
+  const { id } = useParams();
+  return <HotelInformationUser hotelId={id} />
+}
+
 function App() {
   return (
     <Router>
@@ -165,6 +171,7 @@ function App() {
           <Route path="/Search" element={<SearchHotels/>}/>
           <Route path="/editHotels/:id" element={<EditHotels/>}/>
           <Route path="/profile" element={<UserProfile/>}/>
+          <Route path="/SelectedHotel/:hotelId" element={<HotelInformationUser/>}/>
         </Route>
       </Routes>
     </Router>

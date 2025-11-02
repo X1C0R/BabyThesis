@@ -5,6 +5,7 @@ import { supabase } from "./db/supabaseClient.js";
 import multer from "multer";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
+import { use } from "react";
 
 
 dotenv.config();
@@ -415,12 +416,14 @@ app.get("/search", async (req,res) => {
 app.get("/EditHotels/:id", async (req, res) => {
   try {
     const { id } = req.params;
+    console.log("Received request for hotel ID:", id);
 
     if (!id) {
+      console.log("⚠️ Missing ID");
       return res.status(400).json({ error: "Hotel ID is required" });
     }
 
-
+    // Detect if the ID is a UUID (Supabase often uses UUIDs)
     const isUUID = /^[0-9a-fA-F-]{36}$/.test(id);
 
     let query = supabase.from("hotels").select("*");
@@ -428,25 +431,69 @@ app.get("/EditHotels/:id", async (req, res) => {
     if (isUUID) {
       query = query.eq("id", id);
     } else if (!isNaN(id)) {
-      query = query.eq("id", Number(id));
+      query = query.eq("id", Number(id)); // handle numeric ids too
     } else {
       return res.status(400).json({ error: "Invalid hotel ID format" });
     }
 
     const { data, error } = await query.single();
 
-    if (error || !data) {
-      console.error("Supabase error:", error);
+    if (error) {
+      console.error("Supabase error:", error.message);
+      return res.status(404).json({ error: "Hotel not found or Supabase error" });
+    }
+
+    if (!data) {
       return res.status(404).json({ error: "Hotel not found" });
     }
 
     res.status(200).json(data);
   } catch (err) {
-    console.error("Error fetching hotel:", err.message);
+    console.error("Unexpected server error:", err.message);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
+
+//get all reviews
+app.get("/reviews/:hotel_id", async (req, res) => {
+  try {
+    const { hotel_id } = req.params;
+
+    const { data: reviews, error: reviewsError } = await supabase
+      .from("reviews")
+      .select("id, hotel_id, user_id, user_email, rating, comment, created_at")
+      .eq("hotel_id", hotel_id)
+      .order("created_at", { ascending: false });
+
+    if (reviewsError) throw reviewsError;
+
+    const userIds = [...new Set(reviews.map((r) => r.user_id))]; 
+
+    const { data: userData, error: userError } = await supabase
+      .from("users") 
+      .select("id, email")
+      .in("id", userIds);
+
+    if (userError) throw userError;
+
+    const reviewsWithEmail = reviews.map((review) => {
+      const matchedUser = userData?.find((u) => u.id === review.user_id);
+      return {
+        ...review,
+        user_email: review.user_email || matchedUser?.email || "Anonymous",
+      };
+    });
+
+    res.status(200).json(reviewsWithEmail || []);
+  } catch (err) {
+    console.error("Error fetching reviews:", err.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
+//edit hotels
 app.put(
   "/EditHotels/:id",
   upload.fields([
@@ -534,6 +581,72 @@ app.put(
     }
   }
 );
+
+//ratings post
+app.post("/reviews", async (req, res) => {
+  try {
+    const { hotel_id, rating, comment } = req.body;
+    const token = req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({ error: "User not logged in" });
+    }
+
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser(token);
+
+    if (userError || !user) {
+      console.error("Token validation failed:", userError?.message);
+      return res.status(401).json({ error: "Invalid or expired token" });
+    }
+
+    const { data: userData, error: userTableError } = await supabase
+      .from("users")
+      .select("email")
+      .eq("id", user.id)
+      .single();
+
+    if (userTableError) {
+      console.warn("No matching user found in 'users' table:", userTableError.message);
+    }
+
+
+    const userEmail = userData?.email || user.email;
+
+
+    const { data, error } = await supabase
+      .from("reviews")
+      .insert([
+        {
+          hotel_id,
+          user_id: user.id,
+          user_email: userEmail, 
+          rating: rating || null,
+          comment: comment || null,
+        },
+      ])
+      .select();
+
+    if (error) {
+      console.error("Supabase insert error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+
+    res.status(201).json({ message: "Review added successfully", data });
+  } catch (error) {
+    console.error("Server crash error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
+
+
+
+
 
 export default app;
 const PORT = process.env.PORT || 4000;

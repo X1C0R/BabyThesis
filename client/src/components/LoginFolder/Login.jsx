@@ -29,8 +29,8 @@ const Login = () => {
 
       if (data.user) {
         showSuccess("Login successful! Redirecting...", "Success");
-        setLoading(false); // Reset loading state
-        // Give time for user to see the success message before redirect
+        setLoading(false); 
+
         setTimeout(() => {
           navigate("/");
         }, 1500);
